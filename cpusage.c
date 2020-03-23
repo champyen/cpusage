@@ -11,7 +11,7 @@ typedef enum {
     TCK_NICE,
     TCK_SYSTEM,
     TCK_IDLE,
-    TCK_IO_WAIT,
+    TCK_IOWAIT,
     TCK_IRQ,
     TCK_SOFTIRQ,
     TCK_STEAL,
@@ -28,7 +28,7 @@ typedef struct
 
 uint64_t idle_ticks(cpu_tck_t *stat)
 {
-    return stat->tcks[TCK_IDLE] + stat->tcks[TCK_IO_WAIT];
+    return stat->tcks[TCK_IDLE] + stat->tcks[TCK_IOWAIT];
 }
 
 uint64_t total_ticks(cpu_tck_t *stat)
@@ -43,11 +43,9 @@ void cpusage(cpu_tck_t *prev, cpu_tck_t *curr)
 {
     int nprocs = get_nprocs();
     for(int i = 1; i <= nprocs; i++){
-
         uint64_t total = total_ticks(curr+i) - total_ticks(prev+i);
         uint64_t idle = idle_ticks(curr+i) - idle_ticks(prev+i);
         uint64_t active = total - idle;
-
         printf("%s - load %.1f%% \n", curr[i].name, active*100.f/total );
     }
     printf("\n");
@@ -55,19 +53,19 @@ void cpusage(cpu_tck_t *prev, cpu_tck_t *curr)
 
 void read_cpustat(cpu_tck_t *cpu_stat)
 {
-
     FILE *stat_fp = fopen("/proc/stat", "r");
+
     int nprocs = get_nprocs();
     for(int i = 0; i <= nprocs; i++){
         fscanf(
             stat_fp,
             "%s %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu\n", 
-            (char*)(cpu_stat[i].name),
+            cpu_stat[i].name,
             &(cpu_stat[i].tcks[TCK_USER]),
             &(cpu_stat[i].tcks[TCK_NICE]),
             &(cpu_stat[i].tcks[TCK_SYSTEM]),
             &(cpu_stat[i].tcks[TCK_IDLE]),
-            &(cpu_stat[i].tcks[TCK_IO_WAIT]),
+            &(cpu_stat[i].tcks[TCK_IOWAIT]),
             &(cpu_stat[i].tcks[TCK_IRQ]),
             &(cpu_stat[i].tcks[TCK_SOFTIRQ]),
             &(cpu_stat[i].tcks[TCK_STEAL]),

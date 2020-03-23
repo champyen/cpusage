@@ -1,5 +1,5 @@
 # cpusage
-calculate cpu usage with /proc/stat on linux
+calculate per-core cpu usage with /proc/stat on linux
 
 build:
 $ mkdir build; cd build
