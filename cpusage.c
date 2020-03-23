@@ -6,7 +6,8 @@
 #include <stdio.h>
 #include <sys/sysinfo.h>
 
-typedef enum {
+typedef enum
+{
     TCK_USER = 0,
     TCK_NICE,
     TCK_SYSTEM,
@@ -59,7 +60,7 @@ void read_cpustat(cpu_tck_t *cpu_stat)
     for(int i = 0; i <= nprocs; i++){
         fscanf(
             stat_fp,
-            "%s %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu\n", 
+            "%s %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu\n",
             cpu_stat[i].name,
             &(cpu_stat[i].tcks[TCK_USER]),
             &(cpu_stat[i].tcks[TCK_NICE]),
@@ -82,7 +83,7 @@ int main(int ac, char **av)
     int opt;
     int sample_times = 5;
     int sample_ms = 1000;
-    while ((opt = getopt(ac, av, "s:t:")) != -1) {
+    while((opt = getopt(ac, av, "s:t:")) != -1){
         switch(opt){
             case 's':
                 sample_times = atoi(optarg);
@@ -107,7 +108,7 @@ int main(int ac, char **av)
         read_cpustat(cpu_stat[curr]);
         cpusage(cpu_stat[curr^1], cpu_stat[curr]);
         curr ^= 1;
-    }    
+    }
 
     free(cpu_stat[0]);
     free(cpu_stat[1]);
