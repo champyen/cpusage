@@ -83,7 +83,7 @@ int main(int ac, char **av)
 {
     int opt;
     int sample_times = 5;
-    int sample_ms = 100;
+    int sample_ms = 500;
     while ((opt = getopt(ac, av, "s:t:")) != -1) {
         switch(opt){
             case 's':
