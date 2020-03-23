@@ -26,12 +26,11 @@ typedef struct
     uint64_t tcks[NUM_TCK_TYPES];
 } cpu_tck_t;
 
-#define BUFLEN  1024
-
 uint64_t idle_ticks(cpu_tck_t *stat)
 {
     return stat->tcks[TCK_IDLE] + stat->tcks[TCK_IO_WAIT];
 }
+
 uint64_t total_ticks(cpu_tck_t *stat)
 {
     uint64_t total = 0;
@@ -43,7 +42,7 @@ uint64_t total_ticks(cpu_tck_t *stat)
 void cpusage(cpu_tck_t *prev, cpu_tck_t *curr)
 {
     int nprocs = get_nprocs();
-    for(int i = 0; i < nprocs; i++){
+    for(int i = 1; i <= nprocs; i++){
 
         uint64_t total = total_ticks(curr+i) - total_ticks(prev+i);
         uint64_t idle = idle_ticks(curr+i) - idle_ticks(prev+i);
@@ -53,19 +52,16 @@ void cpusage(cpu_tck_t *prev, cpu_tck_t *curr)
     }
     printf("\n");
 }
+
 void read_cpustat(cpu_tck_t *cpu_stat)
 {
 
     FILE *stat_fp = fopen("/proc/stat", "r");
-    char strbuf[BUFLEN];
-    //skip first line
-    fgets(strbuf, BUFLEN, stat_fp);
-
     int nprocs = get_nprocs();
-    for(int i = 0; i < nprocs; i++){
+    for(int i = 0; i <= nprocs; i++){
         fscanf(
             stat_fp,
-            "%s %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu", 
+            "%s %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu\n", 
             (char*)(cpu_stat[i].name),
             &(cpu_stat[i].tcks[TCK_USER]),
             &(cpu_stat[i].tcks[TCK_NICE]),
@@ -101,8 +97,9 @@ int main(int ac, char **av)
 
     uint16_t nprocs = get_nprocs_conf();
     cpu_tck_t *cpu_stat[2];
-    cpu_stat[0] = malloc(sizeof(cpu_tck_t)*nprocs);
-    cpu_stat[1] = malloc(sizeof(cpu_tck_t)*nprocs);
+    // allocate 1 more for the overall 'cpu' item
+    cpu_stat[0] = malloc(sizeof(cpu_tck_t)*(nprocs + 1));
+    cpu_stat[1] = malloc(sizeof(cpu_tck_t)*(nprocs + 1));
 
     int curr = 0;
     read_cpustat(cpu_stat[curr]);
@@ -110,8 +107,7 @@ int main(int ac, char **av)
     while(sample_times--){
         usleep(sample_ms*1000);
         read_cpustat(cpu_stat[curr]);
-        int prev = curr ^ 1;
-        cpusage(cpu_stat[prev], cpu_stat[curr]);
+        cpusage(cpu_stat[curr^1], cpu_stat[curr]);
         curr ^= 1;
     }    
 
